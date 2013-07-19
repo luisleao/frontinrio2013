@@ -7,11 +7,12 @@
 
 var ipaddr = "172.16.1.6";
 var active = true;
+var command_active = false;
 
 
 
-var LAMPADA_CRISTO = "4";
-var LAMPADA_LUMINARIA = "2";
+var LAMPADA_CRISTO = "2";
+var LAMPADA_LUMINARIA = "1";
 
 var LAMPADA_3 = "5";
 var LAMPADA_4 = "3";
@@ -19,6 +20,8 @@ var LAMPADA_5 = "1";
 
 
 
+var oicasa_counter = 0;
+var tocou_aviso_amigo = false;
 
 
 var dmx_controller_skip_init=true; // to avoid conflict with the ilumnichromedemo
@@ -33,19 +36,30 @@ var video_odisseia = document.getElementById("video_odisseia");
 var video_halkills = document.getElementById("video_halkills");
 
 
+var audio_ativo = new Audio();
+var audio_inativo = new Audio();
 var audio_hidrocor = new Audio();
 var audio_olaluis = new Audio();
 var audio_pizza = new Audio();
 var audio_picadasgalaxias = new Audio();
 
+var audio_especial = new Audio();
+
 
 video_jetsons.volume = 0.4;
+
+audio_ativo.src = "media/oicasa2.mp3";
+audio_inativo.src = "media/audio_inativo2.mp3";
 
 
 audio_hidrocor.src = "media/hidrocor1.mp3";
 audio_olaluis.src = "media/olaluis.mp3";
 audio_pizza.src = "media/pizza.mp3";
 audio_picadasgalaxias.src = "media/picadasgalaxias.mp3";
+
+
+
+
 
 
 
@@ -64,6 +78,20 @@ video_halkills.addEventListener('ended', function(){
   this.pause();
   window.slidedeck.nextSlide();
 });
+
+
+audio_pizza.addEventListener('ended', function(){
+  this.currentTime = 0;
+  this.pause();
+  
+  audio_ativo.currentTime = 0;
+  audio_ativo.play();
+  command_active = true;
+});
+
+
+
+
 
 
 
@@ -97,6 +125,10 @@ var COR_AMARELA = []; //rgbToHsl(255, 255, 125);
 
 var stop_tudo = function() {
 
+
+  if (!audio_ativo.paused) audio_ativo.pause();
+  if (!audio_inativo.paused) audio_inativo.pause();
+
   if (!video_jetsons.paused) video_jetsons.pause();
   if (!video_odisseia.paused) video_odisseia.pause();
   if (!video_halkills.paused) video_halkills.pause();
@@ -124,6 +156,7 @@ var limpar_timers = function(){
 var slides = [
   "start",
   "me",
+  "garoa",
   "okglass",
   "2013to1962",
   "jetsons",
@@ -192,19 +225,28 @@ document.addEventListener('slideenter', function(e) {
   switch(slide_name) {
     case "start":
       set_group_state(false);
-      set_lamp_state(LAMPADA_CRISTO, true, 50000, 255, 255, "none");
+      //set_lamp_state(LAMPADA_CRISTO, true, 45000, 255, 255, "none");
+      set_lamp_state(LAMPADA_LUMINARIA, true, 40000, 255, 255, "none");
       //set_lamp_state(LAMPADA_CRISTO, true, COR_ROXA[0], COR_ROXA[1], COR_ROXA[2], "none");
       break;
 
     case "me":
       //ativa com "ligar luz"
-      set_lamp_state(LAMPADA_CRISTO, true, COR_VERMELHO[0], COR_VERMELHO[1], COR_VERMELHO[2], "none");
-      set_lamp_state(LAMPADA_LUMINARIA, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
-      set_lamp_state(LAMPADA_3, true, COR_LARANJA[0], COR_VERDE[1], COR_VERDE[2], "none");
-      set_lamp_state(LAMPADA_4, true, COR_VERMELHO[0], COR_VERDE[1], COR_VERDE[2], "none");
-      set_lamp_state(LAMPADA_5, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
+      //set_lamp_state(LAMPADA_CRISTO, true, 0, 255, 255, "none");
+      set_lamp_state(LAMPADA_LUMINARIA, true, 5000, 255, 255, "none");
+      //set_lamp_state(LAMPADA_CRISTO, true, COR_VERMELHO[0], COR_VERMELHO[1], COR_VERMELHO[2], "none");
+      //set_lamp_state(LAMPADA_LUMINARIA, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
+      //set_lamp_state(LAMPADA_3, true, COR_LARANJA[0], COR_VERDE[1], COR_VERDE[2], "none");
+      //set_lamp_state(LAMPADA_4, true, COR_VERMELHO[0], COR_VERDE[1], COR_VERDE[2], "none");
+      //set_lamp_state(LAMPADA_5, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
 
       break;
+
+    case "garoa":
+      //set_lamp_state(LAMPADA_CRISTO, true, 45000, 255, 255, "none");
+      set_lamp_state(LAMPADA_LUMINARIA, true, 12000, 255, 255, "none");
+      break;
+
 
     case "okglass":
       //ativa com "MENSAGEM"
@@ -230,6 +272,7 @@ document.addEventListener('slideenter', function(e) {
 
     case "jetsons":
       set_group_state(false);
+      video_jetsons.volume = 0.4;
       video_jetsons.currentTime = 0;
       video_jetsons.play();
       break;
@@ -293,7 +336,6 @@ document.addEventListener('slideenter', function(e) {
       set_group_state(true, COR_CIANO[0], COR_CIANO[1], COR_CIANO[2]);
       break;
 
-
     case "demo":
       set_group_state(true, COR_LARANJA[0], COR_LARANJA[1], COR_LARANJA[2], "none");
       break;
@@ -345,7 +387,8 @@ document.addEventListener('slideenter', function(e) {
       break;
 
     case "demoporta":
-      set_lamp_state(LAMPADA_5, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
+      set_lamp_state(LAMPADA_LUMINARIA, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
+      //set_lamp_state(LAMPADA_5, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
       chrome.socket.sendTo(SERVER_SOCKET, str2ab('door_open'), "127.0.0.1", 6000, function callback(){});
       chrome.socket.sendTo(SERVER_SOCKET, str2ab('color_green'), "127.0.0.1", 6000, function callback(){});
       setTimeout(function(){
@@ -356,12 +399,13 @@ document.addEventListener('slideenter', function(e) {
 
     case "democasanoite":
       set_group_state(true, COR_AMARELA[0], COR_AMARELA[1], COR_AMARELA[2], "none");
-      set_lamp_state(LAMPADA_CRISTO, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
+      //set_lamp_state(LAMPADA_CRISTO, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
       break;
 
     case "demoamigo":
-      set_group_state(true, COR_AMARELA[0], COR_AMARELA[1], COR_AMARELA[2], "none");
-      set_lamp_state(LAMPADA_5, true, COR_BRANCA[0], COR_BRANCA[1], COR_BRANCA[2], "none");
+      //set_group_state(true, COR_AMARELA[0], COR_AMARELA[1], COR_AMARELA[2], "none");
+      //set_lamp_state(LAMPADA_5, true, COR_BRANCA[0], COR_BRANCA[1], COR_BRANCA[2], "none");
+      set_lamp_state(LAMPADA_LUMINARIA, true, COR_BRANCA[0], COR_BRANCA[1], COR_BRANCA[2], "none");
       
 
       if (tmr_demoamigo) clearTimeout(tmr_demoamigo);
@@ -387,21 +431,24 @@ document.addEventListener('slideenter', function(e) {
 
     case "demofilme":
       set_group_state(false);
+      video_odisseia.volume = 1;
       video_odisseia.currentTime = 0;
       video_odisseia.play();
       break;
 
     case "demofilmeespera":
-      set_group_state(false);
+      set_lamp_state(LAMPADA_LUMINARIA, true, COR_BRANCA[0], COR_BRANCA[1], COR_BRANCA[2], "none");
+      //set_group_state(false);
       break;
 
     case "democasanoite3":
       set_group_state(true, COR_AMARELA[0], COR_AMARELA[1], COR_AMARELA[2], "none");
-      set_lamp_state(LAMPADA_CRISTO, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
+      //set_lamp_state(LAMPADA_CRISTO, true, COR_VERDE[0], COR_VERDE[1], COR_VERDE[2], "none");
       break;
 
     case "demofim":
-      set_lamp_state(LAMPADA_CRISTO, true, 50000, 255, 255, "none");
+      set_lamp_state(LAMPADA_LUMINARIA, true, 50000, 255, 255, "none");
+      //set_lamp_state(LAMPADA_CRISTO, true, 50000, 255, 255, "none");
       //set_lamp_state(LAMPADA_CRISTO, true, COR_ROXA[0], COR_ROXA[1], COR_ROXA[2], "none");
       break;
 
@@ -415,6 +462,7 @@ document.addEventListener('slideenter', function(e) {
 
     case "hallkills":
       set_group_state(false);
+      video_halkills.volume = 1;
       video_halkills.currentTime = 0;
       video_halkills.play();
       break;
@@ -505,6 +553,12 @@ lang = "pt-BR";
     "quem sou eu",
     "quem só eu",
 
+    "e o que mais",
+    "que mais",
+    "mais o quê",
+    "fala mais",
+
+
     "carnaval",
 
     "acender luz",
@@ -520,17 +574,25 @@ lang = "pt-BR";
     "desligar a luz",
     "desligar luzes",
 
+    "cor leitura",
+    "cor para leitura",
+    "como leitura",
+
     "modo balada",
+    "moto balada",
 
     "abrir porta",
+    "abrir",
 
     "fechar porta",
+    "fechar",
 
     "ligar música",
     "tocar música",
     "começar música",
 
     "parar música",
+    "parar",
 
     "tocar filme",
     "começar filme",
@@ -538,10 +600,12 @@ lang = "pt-BR";
 
     "parar filme",
     "parar o filme",
+    "para filme",
 
     "voltar para início",
     "voltar para o início",
     "recomeçar apresentação",
+    "recomeçar",
 
     "próximo slide",
     "avançar slide",
@@ -559,7 +623,15 @@ lang = "pt-BR";
     "pedi pizza",
 
     "como está o evento",
-    "está achando do evento"
+    "está achando do evento",
+
+    "quantas horas",
+    "bom dia",
+
+    "mussarela",
+
+    "pedir pipoca",
+    "pedi pipoca",
 
 
   ];
@@ -567,7 +639,7 @@ lang = "pt-BR";
 
 function executar_comando(comando) {
 
-    stop_tudo();
+    //stop_tudo();
 
     switch(comando) {
 
@@ -575,104 +647,208 @@ function executar_comando(comando) {
       case "olá casa":
       case "ok casa":
       case "okey casa":
-        audio_olaluis.currentTime = 0;
-        audio_olaluis.play();
+
+        //reduzir audio do que tiver tocando
+        if (!audio_hidrocor.paused) audio_hidrocor.volume = .2;
+        if (!audio_pizza.paused) audio_pizza.volume = .2;
+        if (!audio_picadasgalaxias.paused) audio_picadasgalaxias.volume = .2;
+
+        if (!video_jetsons.paused) video_jetsons.volume = .2;
+        if (!video_odisseia.paused) video_odisseia.volume = .2;
+        if (!video_halkills.paused) video_halkills.volume = .2;
+
+
+        if (command_active) {
+          oicasa_counter++;
+          if (oicasa_counter >= 2) {
+            if (oicasa_counter >= 3) {
+              tocar_audio("vai chamar a tua mãe! seu filho da puta!");
+              oicasa_counter = 0;
+            } else {
+              tocar_audio("se você falar isso mais uma vez eu juro que te encho de porrada!");
+            }
+            return;
+          }
+        }
+
+
+        audio_ativo.currentTime = 0;
+        audio_ativo.play();
+        command_active = true;
+
+        //audio_olaluis.currentTime = 0;
+        //audio_olaluis.play();
         break;
 
+      default:
 
-      case "quem sou eu":
-      case "quem só eu":
-        window.slidedeck.loadSlide(slides.indexOf("me")+1);
-        break;
+        if (!command_active) return;
+
+        switch(comando) {
+
+          case "quem sou eu":
+          case "quem só eu":
+            window.slidedeck.loadSlide(slides.indexOf("me")+1);
+            tocar_audio("Você é o Luís Leão!");
+            break;
+
+          case "e o que mais":
+          case "que mais":
+          case "mais o quê":
+          case "fala mais":
+            window.slidedeck.loadSlide(slides.indexOf("garoa")+1);
+            tocar_audio("Você também é membro do Garoa! Acessa o site gente, pra saber mais.");
+            break;
 
 
-      case "acender luz":
-      case "acender a luz":
-      case "acender luzes":
-      case "acenda as luzes":
-        set_group_state(true, COR_BRANCA[0], COR_BRANCA[1], COR_BRANCA[2], "none");
-        break;
+          case "acender luz":
+          case "acender a luz":
+          case "acender luzes":
+          case "acenda as luzes":
+            set_group_state(true, COR_BRANCA[0], COR_BRANCA[1], COR_BRANCA[2], "none");
+            tocar_audio("luz acesa!");
+            break;
 
-      case "apagar luz":
-      case "apagar a luz":
-      case "apagar luzes":
-      case "desligar luz":
-      case "desligar a luz":
-      case "desligar luzes":
-        set_group_state(false, 0, 255, 255, "none");
-        break;
+          case "apagar luz":
+          case "apagar a luz":
+          case "apagar luzes":
+            set_group_state(false, 0, 255, 255, "none");
+            tocar_audio("luzes apagadas!");
+            break;
 
-      case "modo balada":
-        set_group_state(true, 0, 255, 255, "colorloop");
-        break;
+          case "desligar luz":
+          case "desligar a luz":
+          case "desligar luzes":
+            set_group_state(false, 0, 255, 255, "none");
+            tocar_audio("luzes desligadas!");
+            break;
 
-      case "abrir porta":
-        chrome.socket.sendTo(SERVER_SOCKET, str2ab('door_open'), "127.0.0.1", 6000, function callback(r){console.log(r);});
-        break;
+          case "cor leitura":
+          case "cor para leitura":
+          case "como leitura":
+            set_group_state(true, 36000, 255, 255, "none");
+            tocar_audio("luz com cor para leitura!");
+            break;
 
-      case "fechar porta":
-        chrome.socket.sendTo(SERVER_SOCKET, str2ab('door_close'), "127.0.0.1", 6000, function callback(r){console.log(r);});
-        break;
 
-      case "ligar música":
-      case "tocar música":
-      case "começar música":
-        window.slidedeck.loadSlide(slides.indexOf("demomusica")+1);
-        break;
+          case "moto balada":
+          case "modo balada":
+            set_group_state(true, 46000, 255, 255, "none");
 
-      case "parar música":
-        window.slidedeck.loadSlide(1);
-        break;
+            set_group_state(true, 0, 255, 255, "colorloop");
+            tocar_audio("modo balada ativado!");
+            break;
 
-      case "tocar filme":
-      case "começar filme":
-      case "começar o filme":
-        window.slidedeck.loadSlide(slides.indexOf("demofilme")+1);
-        break;
+          case "abrir porta":
+          case "abrir":
+            chrome.socket.sendTo(SERVER_SOCKET, str2ab('door_open'), "127.0.0.1", 6000, function callback(r){console.log(r);});
+            tocar_audio("porta aberta");
+            break;
 
-      case "parar filme":
-      case "parar o filme":
-        window.slidedeck.loadSlide(1);
-        break;
+          case "fechar porta":
+          case "fechar":
+            chrome.socket.sendTo(SERVER_SOCKET, str2ab('door_close'), "127.0.0.1", 6000, function callback(r){console.log(r);});
+            tocar_audio("porta fechada");
+            break;
 
-      case "voltar para início":
-      case "voltar para o início":
-      case "recomeçar apresentação":
-        window.slidedeck.loadSlide(1);
-        break;
+          case "ligar música":
+          case "tocar música":
+          case "começar música":
+            window.slidedeck.loadSlide(slides.indexOf("demomusica")+1);
+            break;
 
-      case "próximo slide":
-      case "avançar slide":
-      case "mike jagger":
-      case "vai jegue":
-      case "próxima tela":
-      case "avançar tela":
-      case "passar tela":
-        window.slidedeck.nextSlide();
-        break;
-    
-      case "slide anterior":
-      case "voltar slide":
-      case "tela anterior":
-        window.slidedeck.prevSlide();
-        break;
+          case "parar música":
+          case "parar":
+            stop_tudo();
+            window.slidedeck.loadSlide(1);
+            break;
 
-      case "pedir pizza":
-      case "pedi pizza":
-        audio_pizza.currentTime = 0;
-        audio_pizza.play();
-        break;
+          case "tocar filme":
+          case "começar filme":
+          case "começar o filme":
+            window.slidedeck.loadSlide(slides.indexOf("demofilme")+1);
+            break;
 
-      case "como está o evento":
-      case "está achando do evento":
-        audio_picadasgalaxias.currentTime = 0;
-        audio_picadasgalaxias.play();
-        break;
+          case "parar filme":
+          case "parar o filme":
+          case "para filme":
+            stop_tudo();
+            window.slidedeck.loadSlide(1);
+            break;
 
+          case "voltar para início":
+          case "voltar para o início":
+          case "recomeçar apresentação":
+          case "recomeçar":
+            window.slidedeck.loadSlide(1);
+            break;
+
+          case "próximo slide":
+          case "avançar slide":
+          case "mike jagger":
+          case "vai jegue":
+          case "próxima tela":
+          case "avançar tela":
+          case "passar tela":
+            window.slidedeck.nextSlide();
+            break;
+        
+          case "slide anterior":
+          case "voltar slide":
+          case "tela anterior":
+            window.slidedeck.prevSlide();
+            break;
+
+          case "pedir pizza":
+          case "pedi pizza":
+            audio_pizza.currentTime = 0;
+            audio_pizza.play();
+            break;
+
+          case "pedir pipoca":
+          case "pedi pipoca":
+            tocar_audio("A pipoqueira avisou que acabou.");
+            break;
+
+
+          case "mussarela":
+            tocar_audio("Pedi uma pizza de mussarela agora. Previsão de entrega em 30 minutos.");
+            break;
+
+          case "como está o evento":
+          case "está achando do evento":
+            audio_picadasgalaxias.currentTime = 0;
+            audio_picadasgalaxias.play();
+            break;
+
+          case "quantas horas":
+            var d = new Date();
+            var data_hora = d.getHours() + " horas, " + d.getMinutes() + " minutos e " + d.getSeconds() + " segundos.";
+
+            tocar_audio("São " + data_hora);
+            //audio_especial.src = "http://translate.google.com.br/translate_tts?ie=UTF-8&tl=pt&prev=input&q=São " + data_hora;
+            //audio_especial.play();
+
+            break;
+
+          case "bom dia":
+            tocar_audio("você quiz dizer boa tarde né?");
+
+        }
+
+        command_active = false;
+        oicasa_counter = 0;
     }
 
 }
 
+
+
+function tocar_audio(texto) {
+  audio_especial.src = "http://translate.google.com.br/translate_tts?ie=UTF-8&tl=pt&prev=input&q=" + texto;
+  audio_especial.play();
+
+}
 
 
   var recognizing = false;
@@ -696,6 +872,15 @@ function executar_comando(comando) {
   recognition.onerror = function(event) {
     console.log("ERRO!", event.error);
     
+
+    if (command_active) { //event.error == "no-speech" && 
+      command_active = false;
+      oicasa_counter = 0;
+
+      audio_inativo.currentTime = 0;
+      audio_inativo.play();
+    }
+
     /*
     if (event.error == 'no-speech') {
       start_img.src = 'mic.gif';
@@ -748,14 +933,8 @@ function executar_comando(comando) {
             executar_comando(comando);
             return;
 
-
-
-
-
           }
-
         }
-
 /*
         if (r[j].transcript.indexOf("oi casa")!= -1) {
           console.log("COMANDO ATIVO");
@@ -764,6 +943,14 @@ function executar_comando(comando) {
 */
 
       }
+
+      if (command_active) {
+        audio_inativo.currentTime = 0;
+        audio_inativo.play();
+      }
+      command_active = false;
+
+
 
     }
 
@@ -854,25 +1041,44 @@ chrome.socket.create('udp', null, function(createInfo){
     function read()
     {
         chrome.socket.recvFrom(SERVER_SOCKET, 1024, function(recvFromInfo){
-            //console.log('Server: recvFromInfo: ', recvFromInfo, 'Message: ', 
-            //    ab2str(recvFromInfo.data));
+            console.log('Server: recvFromInfo: ', recvFromInfo, 'Message: ', ab2str(recvFromInfo.data));
 
             if(recvFromInfo.resultCode >= 0)
             {
 
               var comando = "";
 
-              console.log(ab2str(recvFromInfo.data).replace("\n", ""));
+              console.log("UDP", ab2str(recvFromInfo.data).replace("\n", ""));
 
               switch(ab2str(recvFromInfo.data).replace("\n", "")) {
                 case "sensor_high":
+                  console.log("sensor_high");
+                  //console.log("eh slide certo? ", window.slidedeck.curSlide_ == slides.indexOf("demoamigo"));
 
-                  console.log("eh slide certo? ", window.slidedeck.curSlide_ == slides.indexOf("demoamigo"));
+                  if (tocou_aviso_amigo) return;
+
+                  tocar_audio("Tem alguém na tua porta. Gostaria de abrir?");
+                  tocou_aviso_amigo = true;
+
+                  //window.slidedeck.loadSlide(slides.indexOf("demoamigo")+1);
+                  //window.slidedeck.nextSlide();
+
+                  setTimeout(function(){
+                    console.log("encerrou timer de aviso de amigo");
+                    tocou_aviso_amigo = false;
+                  }, 1000 * 15);
                   
-                  if (window.slidedeck.curSlide_ == slides.indexOf("demoamigo"))
+
+                  /*
+
+
+                  if (window.slidedeck.curSlide_+1 == slides.indexOf("demoporta"))
                   {
 
                   }
+                  */
+
+
                   //comando = "door_open";
                   //set_lamp_state("1", true, 255, 0, 0, "none", null, null);
 
@@ -880,6 +1086,7 @@ chrome.socket.create('udp', null, function(createInfo){
                   break;
 
                 case "sensor_low":
+                  console.log("sensor_low");
                   //comando = "door_close";
                   //set_lamp_state("1", false);
                   //TODO: incluir timer de 10 SEGUNDOS para apagar!!!!
@@ -899,6 +1106,7 @@ chrome.socket.create('udp', null, function(createInfo){
               }
 
               if (comando != "")
+
                 chrome.socket.sendTo(SERVER_SOCKET, str2ab(comando), "127.0.0.1", 6000, function callback(r){console.log(r);});
               
               read();

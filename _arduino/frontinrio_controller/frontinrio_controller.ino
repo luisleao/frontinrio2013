@@ -22,7 +22,7 @@ int pos = 0;
 
 
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xFF };
 
 
 int pir_state;
@@ -77,10 +77,31 @@ IPAddress broadcast(255, 255, 255, 255);
 
 
 void setup(){
-  Ethernet.begin(mac);
-  Udp.begin(localPort);
   Serial.begin(9600);
   
+  Serial.println("FOI");
+
+
+  //Ethernet.begin(mac);
+  // start the Ethernet connection:
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Failed to configure Ethernet using DHCP");
+    // no point in carrying on, so do nothing forevermore:
+    for(;;)
+      ;
+  }
+  // print your local IP address:
+  Serial.print("My IP address: ");
+  for (byte thisByte = 0; thisByte < 4; thisByte++) {
+    // print the value of each byte of the IP address:
+    Serial.print(Ethernet.localIP()[thisByte], DEC);
+    Serial.print("."); 
+  }
+  Serial.println();
+
+
+
+  Udp.begin(localPort);
   
   
   pinMode(2, INPUT);
@@ -130,7 +151,7 @@ void loop_udp() {
   if(packetSize)
   {
     
-    /*
+    
     Serial.print("Received packet of size ");
     Serial.println(packetSize);
     Serial.print("From ");
@@ -145,7 +166,7 @@ void loop_udp() {
     }
     Serial.print(", port ");
     Serial.println(Udp.remotePort());
-    */
+    
 
     // read the packet into packetBufffer
     Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
@@ -193,7 +214,7 @@ void send_udp_command(char command_char[]) {
 void send_pir_state() {
   //TODO: enviar para servidor mudanca de estado do PIN
   if (pir_state == HIGH) {
-    setRGBColor(255, 0, 0); //delay(150);
+    //setRGBColor(255, 0, 0); //delay(150);
     send_udp_command(COMMAND_SENSOR_HIGH);
 
   }
